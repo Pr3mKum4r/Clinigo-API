@@ -6,6 +6,9 @@ const router = express.Router();
 
 app.use('/', router);
 
+router.get('/', (req, res)=>{
+    res.send('Welcome To the ClinigoAPI');
+})
 router.get('/books', bookController.getAllBooks);
 router.get('/books/:id', bookController.getBook);
 router.post('/books', bookController.createBook);
