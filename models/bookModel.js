@@ -10,12 +10,20 @@ const bookSchema = new mongoose.Schema({
         type: String,
         required: [true, 'A book must have an author'],
     },
-    genre: String,
+    genre: {
+        type: String,
+        required: [true, 'A book must have a genre']
+    },
     year: {
         type: Number,
         required: [true, 'A book must have the year of release']
     },
-    rating: Number
+    rating: {
+        type: Number,
+        required: [true, 'A book must have a rating'],
+        min: [0, 'Rating must be minimum 0'],
+        max: [5, 'Rating must be maximum 5']
+    }
 })
 
 const Book = mongoose.model('Book', bookSchema);

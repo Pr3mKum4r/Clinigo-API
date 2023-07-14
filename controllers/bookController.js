@@ -1,10 +1,28 @@
-const mongoose = require('mongoose');
 const Book = require('../models/bookModel');
-const AppError = require('../utils/AppError');
+const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getAllBooks = catchAsync(async(req, res)=>{ //Add filtering
-    const books = await Book.find()
+
+    let queryObj = {...req.query}
+    delete queryObj['fields'];
+
+    let queryStr = JSON.stringify(queryObj);
+    //Removing mongoose queries to avoid sqlInjection attacks
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/, match => `$${match}`);
+
+    let query = Book.find(JSON.parse(queryStr));
+
+    //Field limiting or Filtering
+    if(req.query.fields){
+        let fields = req.query.fields.split(',').join(' ');
+        query = query.select(fields);
+    }
+    else{
+        query = query.select('-__v'); 
+    }
+
+    let books = await query //execute the query
 
     res.status(200).json({
         status: 'success',
@@ -16,10 +34,10 @@ exports.getAllBooks = catchAsync(async(req, res)=>{ //Add filtering
 });
 
 exports.getBook = catchAsync(async(req, res, next)=>{
-    const book = await Book.find(req.params.id);
+    const book = await Book.findById(req.params.id);
 
     if(!book){
-        return next(new AppError('No Book Found with the given ID!'));
+        return next(new AppError('No Book Found with the given ID!'), 404);
     }
 
     res.status(200).json({
@@ -44,5 +62,34 @@ exports.createBook = catchAsync(async(req, res, next)=>{
         data:{
             newBook
         }
+    })
+});
+
+exports.updateBook = catchAsync(async(req, res, next)=>{
+    const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    })
+    if(!book){
+        return next(new AppError('No book found with the given ID!'));
+    }
+    res.status(200).json({
+        status: 'success',
+        date: {
+            book
+        }
+    })
+});
+
+exports.deleteBook = catchAsync(async(req, res, next)=>{
+    const book = await Book.findByIdAndDelete(req.params.id);
+
+    if(!book){
+        return next(new AppError('No Book Found with the given ID!'), 404);
+    }
+
+    res.status(204).json({
+        status: 'success',
+        data: null
     })
 });
