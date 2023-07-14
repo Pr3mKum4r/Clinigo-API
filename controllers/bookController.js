@@ -1,28 +1,17 @@
 const Book = require('../models/bookModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const APIFeatures = require('../utils/apiFeatures');
 
 exports.getAllBooks = catchAsync(async(req, res)=>{ //Add filtering
 
-    let queryObj = {...req.query}
-    delete queryObj['fields'];
+    const features = new APIFeatures(Book.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
 
-    let queryStr = JSON.stringify(queryObj);
-    //Removing mongoose queries to avoid sqlInjection attacks
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/, match => `$${match}`);
-
-    let query = Book.find(JSON.parse(queryStr));
-
-    //Field limiting or Filtering
-    if(req.query.fields){
-        let fields = req.query.fields.split(',').join(' ');
-        query = query.select(fields);
-    }
-    else{
-        query = query.select('-__v'); 
-    }
-
-    let books = await query //execute the query
+    let books = await features.query //execute the query
 
     res.status(200).json({
         status: 'success',
@@ -75,7 +64,7 @@ exports.updateBook = catchAsync(async(req, res, next)=>{
     }
     res.status(200).json({
         status: 'success',
-        date: {
+        data: {
             book
         }
     })
