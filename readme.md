@@ -1,4 +1,4 @@
-#Clinigo-API
+# Clinigo-API
 A simple nodeJs and MongoDB RESTful API made for books.
 
 API Endpoints
@@ -11,12 +11,12 @@ API Endpoints
 | PUT        | books/id    |Update an existing book|
 | DELETE        | books/id    |Delete an existing book|
 
-##API Features
+## API Features
 1. Filter
 2. Paging
 3. Sort
 4. LimitFields
 
-##Deployed on Render
+## Deployed on Render
 
 https://clinigoapi-webservice.onrender.com/
